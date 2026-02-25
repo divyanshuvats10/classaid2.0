@@ -61,7 +61,7 @@ app.post("/register", async (req: Request, res: Response) => {
     if (!registration_number || !name || !password || !role) {
       return res.status(400).json({ message: "All fields are required" });
     }
-    if (!["student", "worker", "admin"].includes(role)) {
+    if (!["student", "worker", "admin", "teacher"].includes(role)) {
       return res.status(400).json({ message: "Invalid role" });
     }
     const existingUser = await User.findOne({ registration_number });
@@ -111,13 +111,17 @@ app.get("/dashboard", async (req: Request, res: Response) => {
   if (!req.session.user) {
     return res.status(401).json({ message: "Not logged in" });
   }
-  const user = req.session.user;
-  // For students, you could fetch only their complaints
   try {
-    let complaints = [];
+    // Fetch the full user from database to get all fields including subrole
+    const user = await User.findOne({ registration_number: req.session.user.registration_number }).select("registration_number name role subrole");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    let complaints: any[] = [];
     if (user.role === "admin" || user.role === "worker") {
       complaints = await Complaint.find().sort({ dateLogged: -1 });
-    } else if (user.role === "student") {
+    } else if (user.role === "student" || user.role === "teacher") {
       complaints = await Complaint.find({ "loggedBy.registrationNumber": user.registration_number }).sort({ dateLogged: -1 });
     }
     res.json({ user, complaints });
@@ -152,7 +156,8 @@ app.post("/buildings", async (req: Request, res: Response) => {
 // Get all buildings
 app.get("/buildings", async (req: Request, res: Response) => {
   try {
-    const buildings = await Building.find().select("buildingNumber buildingName");
+    // include floors so frontend can show floor counts without extra requests
+    const buildings = await Building.find().select("buildingNumber buildingName floors");
     res.json(buildings);
   } catch (error) {
     console.error("Error fetching buildings:", error);
@@ -698,7 +703,8 @@ app.post("/complaints", async (req: Request, res: Response) => {
       text,
       loggedBy: {
         registrationNumber: req.session.user.registration_number,
-        name: req.session.user.name
+        name: req.session.user.name,
+        role: req.session.user.role
       }
     });
     await complaint.save();
@@ -734,8 +740,8 @@ app.post("/complaints", async (req: Request, res: Response) => {
   }
 });
 
-// Resolve complaint (Admin/Worker)
-app.patch("/complaints/:id/resolve", async (req: Request, res: Response) => {
+// Mark complaint as "looking into it" (Admin/Worker)
+app.patch("/complaints/:id/looking", async (req: Request, res: Response) => {
   if (!req.session.user) {
     return res.status(401).json({ message: "Not logged in" });
   }
@@ -743,10 +749,82 @@ app.patch("/complaints/:id/resolve", async (req: Request, res: Response) => {
     return res.status(403).json({ message: "Unauthorized: Admins and Workers only" });
   }
   try {
+    const complaint = await Complaint.findById(req.params.id);
+    if (!complaint) {
+      return res.status(404).json({ message: "Complaint not found" });
+    }
+
+    // Mark complaint as looking into it
+    complaint.status = "looking";
+    complaint.lookingInto = {
+      registrationNumber: req.session.user.registration_number,
+      name: req.session.user.name,
+      role: req.session.user.role,
+      dateMarked: new Date()
+    };
+
+    await complaint.save();
+    res.json({ message: "Complaint marked as looking into it", complaint });
+  } catch (error) {
+    console.error("Error marking complaint as looking into it:", error);
+    res.status(500).json({ message: "Error marking complaint as looking into it" });
+  }
+});
+
+// Revert complaint from "looking into it" back to "pending" (Admin/Worker)
+app.patch("/complaints/:id/revert-pending", async (req: Request, res: Response) => {
+  if (!req.session.user) {
+    return res.status(401).json({ message: "Not logged in" });
+  }
+  if (req.session.user.role !== "admin" && req.session.user.role !== "worker") {
+    return res.status(403).json({ message: "Unauthorized: Admins and Workers only" });
+  }
+  try {
+    const complaint = await Complaint.findById(req.params.id);
+    if (!complaint) {
+      return res.status(404).json({ message: "Complaint not found" });
+    }
+
+    // Revert complaint back to pending
+    complaint.status = "pending";
+    complaint.lookingInto = undefined;
+
+    await complaint.save();
+    res.json({ message: "Complaint reverted to pending", complaint });
+  } catch (error) {
+    console.error("Error reverting complaint to pending:", error);
+    res.status(500).json({ message: "Error reverting complaint to pending" });
+  }
+});
+
+// Resolve complaint (Admin or assigned Worker only)
+app.patch("/complaints/:id/resolve", async (req: Request, res: Response) => {
+  if (!req.session.user) {
+    return res.status(401).json({ message: "Not logged in" });
+  }
+
+  // Admins can resolve any complaint
+  const isAdmin = req.session.user.role === "admin";
+
+  // Workers can only resolve complaints they're currently looking into
+  const isWorker = req.session.user.role === "worker";
+
+  if (!isAdmin && !isWorker) {
+    return res.status(403).json({ message: "Unauthorized: Admins and assigned Workers only" });
+  }
+
+  try {
     const { remark } = req.body;
     const complaint = await Complaint.findById(req.params.id);
     if (!complaint) {
       return res.status(404).json({ message: "Complaint not found" });
+    }
+
+    // If user is a worker, check if they're the one looking into this complaint
+    if (isWorker && !isAdmin) {
+      if (!complaint.lookingInto || complaint.lookingInto.registrationNumber !== req.session.user.registration_number) {
+        return res.status(403).json({ message: "Unauthorized: You can only resolve complaints you're currently looking into" });
+      }
     }
 
     // Mark complaint resolved
@@ -790,6 +868,121 @@ app.patch("/complaints/:id/resolve", async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error resolving complaint:", error);
     res.status(500).json({ message: "Error resolving complaint" });
+  }
+});
+
+// Get all resolved complaints (Admin/Worker only)
+app.get("/complaints/resolved", async (req: Request, res: Response) => {
+  if (!req.session.user) {
+    return res.status(401).json({ message: "Not logged in" });
+  }
+  if (req.session.user.role !== "admin" && req.session.user.role !== "worker") {
+    return res.status(403).json({ message: "Unauthorized: Admins and Workers only" });
+  }
+  try {
+    const resolvedComplaints = await Complaint.find({ status: "resolved" }).sort({ dateResolved: -1 });
+    res.json(resolvedComplaints);
+  } catch (error) {
+    console.error("Error fetching resolved complaints:", error);
+    res.status(500).json({ message: "Error fetching resolved complaints" });
+  }
+});
+
+// Like/Unlike complaint
+app.post("/complaints/:id/like", async (req: Request, res: Response) => {
+  if (!req.session.user) {
+    return res.status(401).json({ message: "Not logged in" });
+  }
+  try {
+    const complaint = await Complaint.findById(req.params.id);
+    if (!complaint) {
+      return res.status(404).json({ message: "Complaint not found" });
+    }
+
+    // Check if user already liked this complaint
+    const existingLikeIndex = complaint.likes.findIndex(
+      like => like.user.registrationNumber === req.session.user!.registration_number
+    );
+
+    if (existingLikeIndex >= 0) {
+      // User already liked, toggle the active status
+      complaint.likes[existingLikeIndex].isActive = !complaint.likes[existingLikeIndex].isActive;
+      complaint.likes[existingLikeIndex].dateLiked = new Date();
+    } else {
+      // First time liking, add new like entry
+      complaint.likes.push({
+        user: {
+          registrationNumber: req.session.user.registration_number,
+          name: req.session.user.name,
+          role: req.session.user.role
+        },
+        dateLiked: new Date(),
+        isActive: true
+      });
+    }
+
+    await complaint.save();
+    res.json({ message: "Like status updated successfully", complaint });
+  } catch (error) {
+    console.error("Error updating like status:", error);
+    res.status(500).json({ message: "Error updating like status" });
+  }
+});
+
+// Get all users (Admins only)
+app.get("/users", async (req: Request, res: Response) => {
+  if (!req.session.user || req.session.user.role !== "admin") {
+    return res.status(403).json({ message: "Unauthorized: Admins only" });
+  }
+  try {
+    const users = await User.find().select("registration_number name role subrole").sort({ role: 1, name: 1 });
+    res.json(users);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ message: "Error fetching users" });
+  }
+});
+
+// Get specific user profile (Admins only, or own profile)
+app.get("/users/:registrationNumber", async (req: Request, res: Response) => {
+  if (!req.session.user) {
+    return res.status(401).json({ message: "Not logged in" });
+  }
+
+  // Allow admins to view any profile, or users to view their own profile
+  if (req.session.user.role !== "admin" && req.session.user.registration_number !== req.params.registrationNumber) {
+    return res.status(403).json({ message: "Unauthorized: You can only view your own profile" });
+  }
+
+  try {
+    const user = await User.findOne({ registration_number: req.params.registrationNumber }).select("registration_number name role subrole");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({ user });
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    res.status(500).json({ message: "Error fetching user" });
+  }
+});
+
+// Update user subrole (Admins only)
+app.patch("/users/:registration_number/subrole", async (req: Request, res: Response) => {
+  if (!req.session.user || req.session.user.role !== "admin") {
+    return res.status(403).json({ message: "Unauthorized: Admins only" });
+  }
+  try {
+    const { subrole } = req.body;
+    const user = await User.findOne({ registration_number: req.params.registration_number });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    user.subrole = subrole || null;
+    await user.save();
+    res.json({ message: "Subrole updated successfully", user });
+  } catch (error) {
+    console.error("Error updating subrole:", error);
+    res.status(500).json({ message: "Error updating subrole" });
   }
 });
 

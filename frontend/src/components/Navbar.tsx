@@ -34,6 +34,8 @@ const Navbar = () => {
         return "bg-red-500";
       case "worker":
         return "bg-yellow-500";
+      case "teacher":
+        return "bg-orange-500";
       default:
         return "bg-green-500";
     }
@@ -51,9 +53,19 @@ const Navbar = () => {
               <Link to="/dashboard" className="hover:text-purple-200 transition">
                 Dashboard
               </Link>
+              {user && (
+                <Link to={`/profile/${user.registration_number}`} className="hover:text-purple-200 transition">
+                  Profile
+                </Link>
+              )}
               <Link to="/buildings" className="hover:text-purple-200 transition">
                 Blocks
               </Link>
+              {user?.role === "admin" && (
+                <Link to="/admin/users" className="hover:text-purple-200 transition">
+                  Users
+                </Link>
+              )}
             </div>
           </div>
           {user && (

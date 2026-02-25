@@ -1,0 +1,2 @@
+for every worker (and admin) they should have a tab for history, which shows the tasks done by them previously, having "today", "past week", "past month" , "all history" and you can choose two dates and see the work done by you in between those days.
+this thing should also be visible to admin when they goto profile of any worker(from admin dashbaord) and see their histroy

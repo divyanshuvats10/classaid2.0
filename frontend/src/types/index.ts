@@ -1,7 +1,8 @@
 export interface User {
   registration_number: string;
   name: string;
-  role: "student" | "worker" | "admin";
+  role: "student" | "worker" | "admin" | "teacher";
+  subrole?: string;
 }
 
 export interface ObjectType {
@@ -74,6 +75,13 @@ export interface Complaint {
   loggedBy: {
     registrationNumber: string;
     name: string;
+    role?: string;
+  };
+  lookingInto?: {
+    registrationNumber: string;
+    name: string;
+    role: string;
+    dateMarked: string;
   };
   dateResolved?: string;
   resolvedBy?: {
@@ -81,6 +89,15 @@ export interface Complaint {
     name: string;
   };
   resolvedRemark?: string;
-  status: "pending" | "resolved";
+  status: "pending" | "looking" | "resolved";
+  likes: Array<{
+    user: {
+      registrationNumber: string;
+      name: string;
+      role: string;
+    };
+    dateLiked: string;
+    isActive: boolean;
+  }>;
 }
 

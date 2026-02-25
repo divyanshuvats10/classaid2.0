@@ -5,14 +5,16 @@ export interface IUser extends mongoose.Document {
   registration_number: string;
   name: string;
   password: string;
-  role: "student" | "worker" | "admin";
+  role: "student" | "worker" | "admin" | "teacher";
+  subrole?: string;
 }
 
 const userSchema = new mongoose.Schema({
   registration_number: { type: String, required: true, unique: true },
   name: { type: String, required: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ["student", "worker", "admin"], required: true }
+  role: { type: String, enum: ["student", "worker", "admin", "teacher"], required: true },
+  subrole: { type: String, default: null }
 });
 
 // Hash password before saving

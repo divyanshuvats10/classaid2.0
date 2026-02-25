@@ -7,7 +7,7 @@ const Register = () => {
     registration_number: "",
     name: "",
     password: "",
-    role: "student" as "student" | "worker" | "admin",
+    role: "student" as "student" | "worker" | "admin" | "teacher",
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -68,10 +68,11 @@ const Register = () => {
             <label className="block text-gray-700 font-semibold mb-2">Role</label>
             <select
               value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value as "student" | "worker" | "admin" })}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value as "student" | "worker" | "admin" | "teacher" })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
               <option value="student">Student</option>
+              <option value="teacher">Teacher</option>
               <option value="worker">Worker</option>
               <option value="admin">Admin</option>
             </select>

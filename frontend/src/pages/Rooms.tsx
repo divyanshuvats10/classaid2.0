@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import api from "../api/axios";
@@ -14,6 +14,20 @@ const Rooms = () => {
   const [templates, setTemplates] = useState<Array<{ templateName: string }>>([]);
   const [selectedLayout, setSelectedLayout] = useState<string>("none");
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+
+  const sortedAndFilteredRooms = useMemo(() => {
+    const arr = [...rooms].sort((a, b) => {
+      const na = Number(a.roomNumber);
+      const nb = Number(b.roomNumber);
+      if (!isNaN(na) && !isNaN(nb)) return na - nb;
+      return String(a.roomNumber).localeCompare(String(b.roomNumber));
+    });
+    if (!searchQuery) return arr;
+    const q = searchQuery.toLowerCase();
+    return arr.filter((r) => String(r.roomNumber).toLowerCase().includes(q));
+  }, [rooms, searchQuery]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,7 +70,8 @@ const Rooms = () => {
       (c) =>
         c.buildingNumber === buildingNumber &&
         c.floorNumber === floorNumber &&
-        c.roomNumber === roomNumber
+        c.roomNumber === roomNumber &&
+        c.status === "pending"
     ).length;
   };
 
@@ -118,90 +133,123 @@ const Rooms = () => {
           )}
         </div>
 
-        {showAddForm && user?.role === "admin" && (
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <h2 className="text-2xl font-bold mb-4">Add New Room</h2>
-            <form onSubmit={handleAddRoom} className="space-y-4">
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">Room Number</label>
+        <div className="flex">
+          <aside className="w-64 mr-6 hidden md:block">
+            <div className="bg-white rounded-lg shadow-lg p-4">
+              <h3 className="text-lg font-bold mb-3">Search Rooms</h3>
+              <div className="relative">
                 <input
+                  ref={searchInputRef}
                   type="text"
-                  value={newRoomNumber}
-                  onChange={(e) => setNewRoomNumber(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  required
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search by room number"
+                  className="w-full pl-3 pr-9 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    aria-label="Clear search"
+                    onClick={() => {
+                      setSearchQuery("");
+                      searchInputRef.current?.focus();
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 w-6 h-6 flex items-center justify-center"
+                  >
+                    &times;
+                  </button>
+                )}
               </div>
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">Layout</label>
-                <select
-                  value={selectedLayout}
-                  onChange={(e) => setSelectedLayout(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  {templates.length === 0 && <option value="none">No Layouts Defined</option>}
-                  {templates.map((t) => (
-                    <option key={t.templateName} value={t.templateName}>{t.templateName}</option>
-                  ))}
-                  <option value="none">No Layout (Empty)</option>
-                </select>
-              </div>
-              <button type="submit" className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition">
-                Add Room
-              </button>
-            </form>
-          </div>
-        )}
+            </div>
+          </aside>
 
-        {rooms.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-            <p className="text-gray-500">No rooms found</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {rooms.map((room) => {
-              const complaintCount = getComplaintCountForRoom(room.roomNumber);
-              // Count all assets from new layout.assets structure
-              let assetCount = 0;
-              if (room.layout?.assets) {
-                Object.values(room.layout.assets).forEach((assets: any) => {
-                  if (Array.isArray(assets)) assetCount += assets.length;
-                });
-              }
-              return (
-                <div key={room.roomNumber} className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-800">Room {room.roomNumber}</h2>
-                      {(user?.role === "admin" || user?.role === "worker") && (
-                        <div className="text-gray-600 text-sm mt-1">
-                          <span>{assetCount} asset(s)</span>
-                          {complaintCount > 0 && (
-                            <span className="ml-2 text-red-600">• {complaintCount} complaint(s)</span>
+          <main className="flex-1">
+            {showAddForm && user?.role === "admin" && (
+              <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <h2 className="text-2xl font-bold mb-4">Add New Room</h2>
+                <form onSubmit={handleAddRoom} className="space-y-4">
+                  <div>
+                    <label className="block text-gray-700 font-semibold mb-2">Room Number</label>
+                    <input
+                      type="text"
+                      value={newRoomNumber}
+                      onChange={(e) => setNewRoomNumber(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-700 font-semibold mb-2">Layout</label>
+                    <select
+                      value={selectedLayout}
+                      onChange={(e) => setSelectedLayout(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      {templates.length === 0 && <option value="none">No Layouts Defined</option>}
+                      {templates.map((t) => (
+                        <option key={t.templateName} value={t.templateName}>{t.templateName}</option>
+                      ))}
+                      <option value="none">No Layout (Empty)</option>
+                    </select>
+                  </div>
+                  <button type="submit" className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition">
+                    Add Room
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {sortedAndFilteredRooms.length === 0 ? (
+              <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+                <p className="text-gray-500">No rooms found</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {sortedAndFilteredRooms.map((room) => {
+                  const complaintCount = getComplaintCountForRoom(room.roomNumber);
+                  // Count all assets from new layout.assets structure
+                  let assetCount = 0;
+                  if (room.layout?.assets) {
+                    Object.values(room.layout.assets).forEach((assets: any) => {
+                      if (Array.isArray(assets)) assetCount += assets.length;
+                    });
+                  }
+                  return (
+                    <div key={room.roomNumber} className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h2 className="text-2xl font-bold text-gray-800">Room {room.roomNumber}</h2>
+                          {(user?.role === "admin" || user?.role === "worker") && (
+                            <div className="text-gray-600 text-sm mt-1">
+                              <span>{assetCount} asset(s)</span>
+                              {complaintCount > 0 && (
+                                <span className="ml-2 text-red-600">• {complaintCount} complaint(s)</span>
+                              )}
+                            </div>
                           )}
                         </div>
-                      )}
-                    </div>
-                    {user?.role === "admin" && (
-                      <button
-                        onClick={() => handleDelete(room.roomNumber)}
-                        className="text-red-500 hover:text-red-700"
+                        {user?.role === "admin" && (
+                          <button
+                            onClick={() => handleDelete(room.roomNumber)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
+                      <Link
+                        to={`/buildings/${buildingNumber}/floors/${floorNumber}/rooms/${room.roomNumber}/objects`}
+                        className="block bg-gradient-to-r from-purple-600 to-blue-600 text-white text-center py-2 rounded-lg hover:from-purple-700 hover:to-blue-700 transition"
                       >
-                        Delete
-                      </button>
-                    )}
-                  </div>
-                  <Link
-                    to={`/buildings/${buildingNumber}/floors/${floorNumber}/rooms/${room.roomNumber}/objects`}
-                    className="block bg-gradient-to-r from-purple-600 to-blue-600 text-white text-center py-2 rounded-lg hover:from-purple-700 hover:to-blue-700 transition"
-                  >
-                    View Assets
-                  </Link>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                        View Assets
+                      </Link>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </main>
+        </div>
       </div>
     </div>
   );

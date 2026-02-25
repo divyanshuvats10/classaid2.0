@@ -70,6 +70,46 @@ const ComplaintHistory = () => {
     }
   };
 
+  const handleLike = async (complaintId: string) => {
+    try {
+      await api.post(`/complaints/${complaintId}/like`);
+      const response = await api.get(
+        `/buildings/${buildingNumber}/floors/${floorNumber}/rooms/${roomNumber}/objects/${objectNumber}/complaints`
+      );
+      setComplaints(response.data);
+    } catch (error: any) {
+      alert(error.response?.data?.message || "Error updating like status");
+    }
+  };
+
+  const getActiveLikesCount = (complaint: Complaint) => {
+    return complaint.likes.filter(like => like.isActive).length;
+  };
+
+  const isLikedByUser = (complaint: Complaint, user: User | null) => {
+    if (!user) return false;
+    return complaint.likes.some(like => 
+      like.user.registrationNumber === user.registration_number && like.isActive
+    );
+  };
+
+  const canResolveComplaint = (complaint: Complaint, user: User | null) => {
+    if (!user) return false;
+
+    // Admins can resolve any complaint
+    if (user.role === "admin") {
+      return complaint.status === "pending" || complaint.status === "looking";
+    }
+
+    // Workers can only resolve complaints they're currently looking into
+    if (user.role === "worker") {
+      return complaint.status === "looking" &&
+             complaint.lookingInto?.registrationNumber === user.registration_number;
+    }
+
+    return false;
+  };
+
   const getStatusColor = (status: string) => {
     return status === "pending" ? "bg-yellow-500" : "bg-green-500";
   };
@@ -103,7 +143,7 @@ const ComplaintHistory = () => {
 
         </div>
 
-        {showForm && user?.role === "student" && (
+        {showForm && (user?.role === "student" || user?.role === "teacher" || user?.role === "admin" || user?.role === "worker") && (
           <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
             <h2 className="text-2xl font-bold mb-4">Submit New Complaint</h2>
             <form onSubmit={handleSubmitComplaint} className="space-y-4">
@@ -140,6 +180,27 @@ const ComplaintHistory = () => {
                       </span>
                     </div>
                     <p className="text-gray-800 mb-3">{complaint.text}</p>
+                    <div className="flex items-center space-x-4 mb-3">
+                      <div className="flex items-center space-x-2">
+                        {complaint.status === "pending" && (
+                          <button
+                            onClick={() => handleLike(complaint._id)}
+                            className={`px-3 py-1 rounded-full text-sm font-semibold transition ${
+                              isLikedByUser(complaint, user)
+                                ? 'bg-red-500 text-white hover:bg-red-600'
+                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                            }`}
+                          >
+                            {isLikedByUser(complaint, user) ? '❤️' : '🤍'} {getActiveLikesCount(complaint)}
+                          </button>
+                        )}
+                        {complaint.status !== "pending" && getActiveLikesCount(complaint) > 0 && (
+                          <span className="px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-700">
+                            ❤️ {getActiveLikesCount(complaint)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                     <div className="text-sm text-gray-600 space-y-1">
                       <p>
                         <span className="font-semibold">Logged by:</span> {complaint.loggedBy.name} (
@@ -168,7 +229,7 @@ const ComplaintHistory = () => {
                       )}
                     </div>
                   </div>
-                  {user && (user.role === "admin" || user.role === "worker") && complaint.status === "pending" && (
+                  {canResolveComplaint(complaint, user) && (
                     <button
                       onClick={() => handleResolve(complaint._id)}
                       className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition ml-4"
