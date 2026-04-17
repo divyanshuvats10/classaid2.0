@@ -6,7 +6,6 @@ import { User } from "../types";
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState<User[]>([]);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [editingWorker, setEditingWorker] = useState<User | null>(null);
   const [editingSubrole, setEditingSubrole] = useState("");
@@ -19,7 +18,6 @@ const AdminDashboard = () => {
       try {
         setLoading(true);
         const userResponse = await api.get("/dashboard");
-        setCurrentUser(userResponse.data.user);
         
         // Check if user is admin
         if (userResponse.data.user.role !== "admin") {

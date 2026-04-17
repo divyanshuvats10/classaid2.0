@@ -66,12 +66,12 @@ export interface ILayout {
   };
 }
 
-export interface IRoom extends mongoose.Document {
+export interface IRoom {
   roomNumber: string;
   layout?: ILayout;
 }
 
-export interface IFloor extends mongoose.Document {
+export interface IFloor {
   floorNumber: string;
   rooms: IRoom[];
 }

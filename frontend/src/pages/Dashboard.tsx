@@ -285,21 +285,26 @@ const Dashboard = () => {
   }, [user, activeTab]);
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen">
       <Navbar />
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">Dashboard</h1>
+      <div className="container mx-auto px-6 py-8">
+        <div className="card mb-8">
+          <h1 className="text-5xl font-black text-red-600 mb-4">DASHBOARD</h1>
+          <div className="w-24 h-1 bg-yellow-500 mb-6"></div>
           {user && (
-            <div className="bg-gradient-to-r from-purple-100 to-blue-100 p-4 rounded-lg">
-              <p className="text-lg">
-                <span className="font-semibold">Welcome,</span> {user.name}
+            <div className="bg-pattern p-6 rounded-none border-l-8 border-blue-500">
+              <p className="text-xl font-bold uppercase tracking-wide">
+                Welcome, <span className="text-red-600">{user.name}</span>
               </p>
-              <p className="text-gray-600">Role: {user.role.toUpperCase()}</p>
-              <p className="text-gray-600">Registration: {user.registration_number}</p>
+              <p className="text-gray-700 font-semibold uppercase text-sm tracking-wide mt-2">
+                Role: {user.role}
+              </p>
+              <p className="text-gray-600 uppercase text-xs tracking-wide">
+                Registration: {user.registration_number}
+              </p>
               {user.subrole && (
-                <p className="text-gray-600 mt-1">
-                  <span className="font-semibold">Specialization:</span> {user.subrole === "ac_technician" ? "AC Technician" : user.subrole.charAt(0).toUpperCase() + user.subrole.slice(1)}
+                <p className="text-gray-600 uppercase text-xs tracking-wide mt-1">
+                  Specialization: {user.subrole === "ac_technician" ? "AC Technician" : user.subrole.charAt(0).toUpperCase() + user.subrole.slice(1)}
                 </p>
               )}
             </div>
@@ -308,24 +313,24 @@ const Dashboard = () => {
 
         {/* Tab Navigation */}
         {(user?.role === "admin" || user?.role === "worker") && (
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <div className="flex space-x-4 border-b border-gray-200">
+          <div className="card mb-8">
+            <div className="flex space-x-8 border-b-4 border-gray-200 pb-2">
               <button
                 onClick={() => setActiveTab("current")}
-                className={`px-4 py-2 font-semibold text-sm ${
+                className={`px-6 py-3 font-black text-lg uppercase tracking-wide transition-all ${
                   activeTab === "current"
-                    ? "text-purple-600 border-b-2 border-purple-600"
-                    : "text-gray-500 hover:text-purple-600"
+                    ? "text-red-600 border-b-4 border-red-600 bg-red-50"
+                    : "text-gray-500 hover:text-red-600 hover:bg-gray-50"
                 }`}
               >
                 Current Tasks
               </button>
               <button
                 onClick={() => setActiveTab("history")}
-                className={`px-4 py-2 font-semibold text-sm ${
+                className={`px-6 py-3 font-black text-lg uppercase tracking-wide transition-all ${
                   activeTab === "history"
-                    ? "text-purple-600 border-b-2 border-purple-600"
-                    : "text-gray-500 hover:text-purple-600"
+                    ? "text-yellow-600 border-b-4 border-yellow-600 bg-yellow-50"
+                    : "text-gray-500 hover:text-yellow-600 hover:bg-gray-50"
                 }`}
               >
                 History ({getFilteredHistoryComplaints().length})
@@ -343,11 +348,13 @@ const Dashboard = () => {
                 (c) => c.status === "looking" && c.lookingInto?.registrationNumber === user?.registration_number
               );
               return myLookingIntoComplaints.length > 0 && (user?.role === "admin" || user?.role === "worker") ? (
-                <div className="bg-indigo-50 border-l-4 border-indigo-500 rounded-lg shadow-lg p-6 mb-6">
-                  <h2 className="text-2xl font-bold text-indigo-900 mb-4">Looking Into ({myLookingIntoComplaints.length})</h2>
-                  <div className="space-y-4">
+                <div className="card-alt mb-8 border-l-red-500">
+                  <h2 className="text-3xl font-black text-red-600 mb-6 uppercase tracking-wide">
+                    Looking Into ({myLookingIntoComplaints.length})
+                  </h2>
+                  <div className="grid-construct">
                     {myLookingIntoComplaints.map((complaint) => (
-                      <div key={complaint._id} className="bg-white border border-indigo-200 rounded-lg p-4 hover:shadow-md transition">
+                      <div key={complaint._id} className="card hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <div className="flex items-center space-x-2 mb-2">

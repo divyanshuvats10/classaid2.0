@@ -59,7 +59,7 @@ const LayoutEditor = () => {
   const handleCellClick = (row: number, col: number) => {
     if (!layout) return;
     
-    const existingPosition = layout.positions.find((p) => p.row === row && p.col === col);
+    const existingPosition = layout.positions?.find((p) => p.row === row && p.col === col);
     
     if (existingPosition) {
       // Edit existing asset
@@ -98,7 +98,7 @@ const LayoutEditor = () => {
       if (layout) {
         for (let r = selectedCell.row; r < selectedCell.row + assetSize.height; r++) {
           for (let c = selectedCell.col; c < selectedCell.col + assetSize.width; c++) {
-            const occupied = layout.positions.find(
+            const occupied = layout.positions?.find(
               (p) => p.row === r && p.col === c && p.objectNumber !== existingAsset?.objectNumber
             );
             if (occupied) {
@@ -132,7 +132,7 @@ const LayoutEditor = () => {
 
       // Update layout position with size info
       if (layout) {
-        let newPositions = layout.positions.filter(
+        let newPositions = (layout.positions || []).filter(
           (p) => !(p.row === selectedCell.row && p.col === selectedCell.col)
         );
         newPositions.push({
@@ -165,7 +165,7 @@ const LayoutEditor = () => {
   const handleModalDelete = async () => {
     if (!selectedCell) return;
 
-    const position = layout?.positions.find(
+    const position = layout?.positions?.find(
       (p) => p.row === selectedCell.row && p.col === selectedCell.col
     );
     if (!position) return;
@@ -180,7 +180,7 @@ const LayoutEditor = () => {
       if (layout) {
         setLayout({
           ...layout,
-          positions: layout.positions.filter(
+          positions: (layout.positions || []).filter(
             (p) => !(p.row === selectedCell.row && p.col === selectedCell.col)
           )
         });
@@ -322,7 +322,7 @@ const LayoutEditor = () => {
                     .fill(null)
                     .map((_, colIndex) => {
                       // Check if this cell is occupied by any asset
-                      const isOccupied = layout?.positions.some((p) => {
+                      const isOccupied = layout?.positions?.some((p) => {
                         const width = p.width || getAssetSize(objects.find((obj) => obj.objectNumber === p.objectNumber)?.type || "table").width;
                         const height = p.height || getAssetSize(objects.find((obj) => obj.objectNumber === p.objectNumber)?.type || "table").height;
                         return (
@@ -352,7 +352,7 @@ const LayoutEditor = () => {
                 )}
 
               {/* Render assets on top, spanning their width/height */}
-              {layout?.positions.map((position) => {
+              {layout?.positions?.map((position) => {
                 const asset = objects.find((obj) => obj.objectNumber === position.objectNumber);
                 const width = position.width || getAssetSize(asset?.type || "table").width;
                 const height = position.height || getAssetSize(asset?.type || "table").height;
@@ -390,11 +390,11 @@ const LayoutEditor = () => {
         </div>
 
         {/* Assets Sidebar */}
-        {layout && layout.positions.length > 0 && (
+        {layout && (layout.positions?.length || 0) > 0 && (
           <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <h2 className="text-xl font-bold mb-4">Assets in Layout ({layout.positions.length})</h2>
+            <h2 className="text-xl font-bold mb-4">Assets in Layout ({layout.positions?.length})</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {layout.positions.map((position) => {
+              {layout.positions?.map((position) => {
                 const asset = objects.find((obj) => obj.objectNumber === position.objectNumber);
                 if (!asset) return null;
 
@@ -442,7 +442,7 @@ const LayoutEditor = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
               <h2 className="text-2xl font-bold mb-4">
-                {layout?.positions.find((p) => p.row === selectedCell.row && p.col === selectedCell.col)
+                {layout?.positions?.find((p) => p.row === selectedCell.row && p.col === selectedCell.col)
                   ? "Edit Asset"
                   : "Add Asset"}
               </h2>
@@ -514,7 +514,7 @@ const LayoutEditor = () => {
                 >
                   Save
                 </button>
-                {layout?.positions.find((p) => p.row === selectedCell.row && p.col === selectedCell.col) && (
+                {layout?.positions?.find((p) => p.row === selectedCell.row && p.col === selectedCell.col) && (
                   <button
                     onClick={handleModalDelete}
                     className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
