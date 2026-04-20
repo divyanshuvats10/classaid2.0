@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import api from "../api/axios";
 import { User, Complaint } from "../types";
@@ -13,6 +13,7 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState<"lodged" | "fixed">("lodged");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -87,10 +88,10 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100">
+      <div className="min-h-screen">
         <Navbar />
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center py-8">
+        <div className="container mx-auto px-6 py-8">
+          <div className="card text-center py-12">
             <p className="text-gray-500">Loading profile...</p>
           </div>
         </div>
@@ -100,12 +101,12 @@ const Profile = () => {
 
   if (error || !targetUser) {
     return (
-      <div className="min-h-screen bg-gray-100">
+      <div className="min-h-screen">
         <Navbar />
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center py-8">
+        <div className="container mx-auto px-6 py-8">
+          <div className="card text-center py-12">
             <p className="text-red-500">{error || "User not found"}</p>
-            <Link to="/admin/users" className="text-blue-600 hover:underline mt-4 inline-block">
+            <Link to="/admin/users" className="btn-outline mt-4 inline-block">
               Back to Admin Dashboard
             </Link>
           </div>
@@ -119,18 +120,18 @@ const Profile = () => {
   const showFixedTab = canViewFixedComplaints && (isOwnProfile || currentUser?.role === "admin");
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen">
       <Navbar />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-6 py-8">
         {/* Profile Header */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between">
+        <div className="card mb-6">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800">{targetUser.name}</h1>
-              <p className="text-gray-600">Registration: {targetUser.registration_number}</p>
-              <p className="text-gray-600">Role: {targetUser.role.toUpperCase()}</p>
+              <h1 className="text-4xl font-black text-orange-600">{targetUser.name}</h1>
+              <p className="text-gray-700 uppercase tracking-wide mt-3">Registration: {targetUser.registration_number}</p>
+              <p className="text-gray-700 uppercase tracking-wide">Role: {targetUser.role.toUpperCase()}</p>
               {targetUser.subrole && (
-                <p className="text-gray-600">
+                <p className="text-gray-700 uppercase tracking-wide mt-1">
                   Specialization: {targetUser.subrole === "ac_technician" ? "AC Technician" : targetUser.subrole.charAt(0).toUpperCase() + targetUser.subrole.slice(1)}
                 </p>
               )}
@@ -138,7 +139,7 @@ const Profile = () => {
             {!isOwnProfile && (
               <Link
                 to="/admin/users"
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+                className="btn-outline"
               >
                 Back to Admin Dashboard
               </Link>
@@ -147,18 +148,18 @@ const Profile = () => {
         </div>
 
         {/* Complaint History Tabs */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="card">
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Complaint History</h2>
 
             {/* Tab Navigation */}
-            <div className="flex space-x-4 border-b border-gray-200">
+            <div className="flex space-x-4 border-b-4 border-gray-200 pb-2">
               <button
                 onClick={() => setActiveTab("lodged")}
-                className={`px-4 py-2 font-semibold text-sm ${
+                className={`px-6 py-3 font-bold text-lg tracking-wide transition-all ${
                   activeTab === "lodged"
-                    ? "text-purple-600 border-b-2 border-purple-600"
-                    : "text-gray-500 hover:text-purple-600"
+                    ? "text-orange-600 border-b-4 border-orange-600 bg-orange-50"
+                    : "text-gray-500 hover:text-orange-600 hover:bg-gray-50"
                 }`}
               >
                 Lodged Complaints ({complaints.length})
@@ -166,10 +167,10 @@ const Profile = () => {
               {showFixedTab && (
                 <button
                   onClick={() => setActiveTab("fixed")}
-                  className={`px-4 py-2 font-semibold text-sm ${
+                  className={`px-6 py-3 font-bold text-lg tracking-wide transition-all ${
                     activeTab === "fixed"
-                      ? "text-purple-600 border-b-2 border-purple-600"
-                      : "text-gray-500 hover:text-purple-600"
+                      ? "text-orange-600 border-b-4 border-orange-600 bg-orange-50"
+                      : "text-gray-500 hover:text-orange-600 hover:bg-gray-50"
                   }`}
                 >
                   Fixed Complaints ({resolvedComplaints.length})
@@ -186,9 +187,13 @@ const Profile = () => {
                   <p className="text-gray-500">No complaints lodged yet.</p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="grid-construct">
                   {complaints.map((complaint) => (
-                    <div key={complaint._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                    <div
+                      key={complaint._id}
+                      className="card complaint-card"
+                      onClick={() => navigate(`/buildings/${complaint.buildingNumber}/floors/${complaint.floorNumber}/rooms/${complaint.roomNumber}/objects/${complaint.objectNumber}/complaints`)}
+                    >
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-2">
@@ -215,10 +220,11 @@ const Profile = () => {
                             )}
                           </div>
                         </div>
-                        <div className="flex flex-col gap-2 ml-4 min-w-max">
+                        <div className="flex flex-col gap-3 ml-6 min-w-max">
                           <Link
                             to={`/buildings/${complaint.buildingNumber}/floors/${complaint.floorNumber}/rooms/${complaint.roomNumber}/objects/${complaint.objectNumber}/complaints`}
-                            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold text-sm text-center whitespace-nowrap"
+                            className="btn-outline text-sm view-details-btn"
+                            onClick={(e) => e.stopPropagation()}
                           >
                             View Details
                           </Link>
@@ -238,9 +244,13 @@ const Profile = () => {
                   <p className="text-gray-500">No complaints fixed yet.</p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="grid-construct">
                   {resolvedComplaints.map((complaint) => (
-                    <div key={complaint._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                    <div
+                      key={complaint._id}
+                      className="card complaint-card"
+                      onClick={() => navigate(`/buildings/${complaint.buildingNumber}/floors/${complaint.floorNumber}/rooms/${complaint.roomNumber}/objects/${complaint.objectNumber}/complaints`)}
+                    >
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-2">
@@ -262,10 +272,11 @@ const Profile = () => {
                             )}
                           </div>
                         </div>
-                        <div className="flex flex-col gap-2 ml-4 min-w-max">
+                        <div className="flex flex-col gap-3 ml-6 min-w-max">
                           <Link
                             to={`/buildings/${complaint.buildingNumber}/floors/${complaint.floorNumber}/rooms/${complaint.roomNumber}/objects/${complaint.objectNumber}/complaints`}
-                            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold text-sm text-center whitespace-nowrap"
+                            className="btn-outline text-sm view-details-btn"
+                            onClick={(e) => e.stopPropagation()}
                           >
                             View Details
                           </Link>

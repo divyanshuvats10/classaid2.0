@@ -73,25 +73,29 @@ const Buildings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-[#fef7ed]">
       <Navbar />
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Blocks</h1>
-          {user?.role === "admin" && (
-            <button
-              onClick={() => setShowAddForm(!showAddForm)}
-              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition"
-            >
-              {showAddForm ? "Cancel" : "Add Block"}
-            </button>
-          )}
+        <div className="card p-6 mb-8 bg-[#fff4e5] border-0 shadow-2xl">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h1 className="text-4xl font-black text-orange-700">Blocks</h1>
+              <p className="mt-3 max-w-2xl text-gray-600">
+                Browse all blocks, search quickly, and manage the school layout with bold card-driven workflows.
+              </p>
+            </div>
+            {user?.role === "admin" && (
+              <button onClick={() => setShowAddForm(!showAddForm)} className="btn-primary">
+                {showAddForm ? "Cancel" : "Add Block"}
+              </button>
+            )}
+          </div>
         </div>
 
-        <div className="flex">
-          <aside className="w-64 mr-6 hidden md:block">
-            <div className="bg-white rounded-lg shadow-lg p-4">
-              <h3 className="text-lg font-bold mb-3">Search Blocks</h3>
+        <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
+          <aside className="space-y-6">
+            <div className="card p-6 border-2 border-orange-200 bg-white/95">
+              <h3 className="text-xl font-bold text-orange-600 mb-4">Search Blocks</h3>
               <div className="relative">
                 <input
                   ref={searchInputRef}
@@ -99,7 +103,7 @@ const Buildings = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search by number or name"
-                  className="w-full pl-3 pr-9 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 pr-10 text-sm text-gray-700 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200"
                 />
                 {searchQuery && (
                   <button
@@ -109,19 +113,17 @@ const Buildings = () => {
                       setSearchQuery("");
                       searchInputRef.current?.focus();
                     }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 w-6 h-6 flex items-center justify-center"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                   >
                     &times;
                   </button>
                 )}
               </div>
             </div>
-          </aside>
 
-          <main className="flex-1">
             {showAddForm && user?.role === "admin" && (
-              <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-                <h2 className="text-2xl font-bold mb-4">Add New Block</h2>
+              <div className="card p-6 border-2 border-orange-200 bg-white/95">
+                <h2 className="text-xl font-bold mb-4">Add New Block</h2>
                 <form onSubmit={handleAddBuilding} className="space-y-4">
                   <div>
                     <label className="block text-gray-700 font-semibold mb-2">Block Number (1-60)</label>
@@ -131,7 +133,7 @@ const Buildings = () => {
                       max="60"
                       value={newBuilding.buildingNumber}
                       onChange={(e) => setNewBuilding({ ...newBuilding, buildingNumber: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200"
                       required
                     />
                   </div>
@@ -141,51 +143,64 @@ const Buildings = () => {
                       type="text"
                       value={newBuilding.buildingName}
                       onChange={(e) => setNewBuilding({ ...newBuilding, buildingName: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                       placeholder="e.g., Science Block"
+                      className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200"
                     />
                   </div>
-                  <button type="submit" className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition">
+                  <button type="submit" className="btn-primary w-full">
                     Add Block
                   </button>
                 </form>
               </div>
             )}
+          </aside>
 
+          <main className="space-y-6">
             {sortedAndFiltered.length === 0 ? (
-              <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-                <p className="text-gray-500">No blocks found</p>
+              <div className="card p-10 border-2 border-orange-200 bg-white/95 text-center">
+                <p className="text-gray-600">No blocks found</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
                 {sortedAndFiltered.map((building) => (
-                  <div key={building.buildingNumber} className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition flex flex-col" style={{ minHeight: '160px' }}>
-                    <div className="flex justify-between items-start mb-4 flex-grow">
-                      <div className="flex-1">
-                        <h2 className="text-2xl font-bold text-gray-800">Block {building.buildingNumber}</h2>
-                        {building.buildingName && (
-                          <p className="text-gray-600 text-sm mt-1">{building.buildingName}</p>
-                        )}
-                        <p className="text-gray-600 text-sm mt-1">{building.floors?.length ?? 0} floor(s)</p>
-                        {!building.buildingName && (
-                          <div className="text-sm mt-1" style={{ height: '20px' }}></div>
+                  <div
+                    key={building.buildingNumber}
+                    className="card flex min-h-[200px] flex-col justify-between border-2 border-orange-200 bg-white/95 p-6 shadow-lg transition hover:-translate-y-1"
+                  >
+                    <div className="space-y-3">
+                      <div className="inline-flex items-center gap-2 rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-orange-700">
+                        Block
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-black text-gray-900">{building.buildingNumber}</h2>
+                        {building.buildingName ? (
+                          <p className="text-gray-600 mt-1">{building.buildingName}</p>
+                        ) : (
+                          <p className="text-gray-400 mt-1">Unnamed block</p>
                         )}
                       </div>
+                      <p className="text-sm text-gray-600">
+                        {building.floors?.length ?? 0} floor{(building.floors?.length ?? 0) === 1 ? "" : "s"}
+                      </p>
+                    </div>
+
+                    <div className="mt-6 flex flex-col gap-3">
+                      <Link
+                        to={`/buildings/${building.buildingNumber}/floors`}
+                        className="btn-outline text-center"
+                      >
+                        View Floors
+                      </Link>
                       {user?.role === "admin" && (
                         <button
+                          type="button"
                           onClick={() => handleDelete(building.buildingNumber)}
-                          className="text-red-500 hover:text-red-700"
+                          className="btn-secondary"
                         >
-                          Delete
+                          Delete Block
                         </button>
                       )}
                     </div>
-                    <Link
-                      to={`/buildings/${building.buildingNumber}/floors`}
-                      className="block bg-gradient-to-r from-purple-600 to-blue-600 text-white text-center py-2 rounded-lg hover:from-purple-700 hover:to-blue-700 transition mt-auto"
-                    >
-                      View Floors
-                    </Link>
                   </div>
                 ))}
               </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import api from "../api/axios";
 import { User, Complaint } from "../types";
@@ -16,6 +16,8 @@ const Dashboard = () => {
   const [historyFilter, setHistoryFilter] = useState<"today" | "week" | "month" | "all" | "custom">("all");
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -127,9 +129,9 @@ const Dashboard = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
-        return "bg-yellow-500";
+        return "bg-orange-500";
       case "looking":
-        return "bg-blue-500";
+        return "bg-teal-500";
       case "resolved":
         return "bg-green-500";
       default:
@@ -289,8 +291,8 @@ const Dashboard = () => {
       <Navbar />
       <div className="container mx-auto px-6 py-8">
         <div className="card mb-8">
-          <h1 className="text-5xl font-black text-red-600 mb-4">DASHBOARD</h1>
-          <div className="w-24 h-1 bg-yellow-500 mb-6"></div>
+          <h1 className="text-5xl font-black text-orange-600 mb-4">Dashboard</h1>
+          <div className="w-24 h-1 bg-teal-500 mb-6"></div>
           {user && (
             <div className="bg-pattern p-6 rounded-none border-l-8 border-blue-500">
               <p className="text-xl font-bold uppercase tracking-wide">
@@ -317,20 +319,20 @@ const Dashboard = () => {
             <div className="flex space-x-8 border-b-4 border-gray-200 pb-2">
               <button
                 onClick={() => setActiveTab("current")}
-                className={`px-6 py-3 font-black text-lg uppercase tracking-wide transition-all ${
+                className={`px-6 py-3 font-bold text-lg tracking-wide transition-all ${
                   activeTab === "current"
-                    ? "text-red-600 border-b-4 border-red-600 bg-red-50"
-                    : "text-gray-500 hover:text-red-600 hover:bg-gray-50"
+                    ? "text-orange-600 border-b-4 border-orange-600 bg-orange-50"
+                    : "text-gray-500 hover:text-orange-600 hover:bg-gray-50"
                 }`}
               >
                 Current Tasks
               </button>
               <button
                 onClick={() => setActiveTab("history")}
-                className={`px-6 py-3 font-black text-lg uppercase tracking-wide transition-all ${
+                className={`px-6 py-3 font-bold text-lg tracking-wide transition-all ${
                   activeTab === "history"
-                    ? "text-yellow-600 border-b-4 border-yellow-600 bg-yellow-50"
-                    : "text-gray-500 hover:text-yellow-600 hover:bg-gray-50"
+                    ? "text-orange-600 border-b-4 border-orange-600 bg-orange-50"
+                    : "text-gray-500 hover:text-orange-600 hover:bg-gray-50"
                 }`}
               >
                 History ({getFilteredHistoryComplaints().length})
@@ -348,13 +350,17 @@ const Dashboard = () => {
                 (c) => c.status === "looking" && c.lookingInto?.registrationNumber === user?.registration_number
               );
               return myLookingIntoComplaints.length > 0 && (user?.role === "admin" || user?.role === "worker") ? (
-                <div className="card-alt mb-8 border-l-red-500">
-                  <h2 className="text-3xl font-black text-red-600 mb-6 uppercase tracking-wide">
+                <div className="card-alt mb-8 border-l-orange-500">
+                  <h2 className="text-3xl font-bold text-orange-600 mb-6 tracking-wide">
                     Looking Into ({myLookingIntoComplaints.length})
                   </h2>
                   <div className="grid-construct">
                     {myLookingIntoComplaints.map((complaint) => (
-                      <div key={complaint._id} className="card hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+                    <div 
+                      key={complaint._id} 
+                      className="card complaint-card"
+                      onClick={() => navigate(`/buildings/${complaint.buildingNumber}/floors/${complaint.floorNumber}/rooms/${complaint.roomNumber}/objects/${complaint.objectNumber}/complaints`)}
+                    >
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <div className="flex items-center space-x-2 mb-2">
@@ -393,22 +399,29 @@ const Dashboard = () => {
                               <p>Date Logged: {new Date(complaint.dateLogged).toLocaleString()}</p>
                             </div>
                           </div>
-                          <div className="flex flex-col gap-2 ml-4 min-w-max">
+                          <div className="flex flex-col gap-3 ml-6 min-w-max">
                             <Link
                               to={`/buildings/${complaint.buildingNumber}/floors/${complaint.floorNumber}/rooms/${complaint.roomNumber}/objects/${complaint.objectNumber}/complaints`}
-                              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold text-sm text-center whitespace-nowrap"
+                              className="btn-outline text-sm view-details-btn"
+                              onClick={(e) => e.stopPropagation()}
                             >
                               View Details
                             </Link>
                             <button
-                              onClick={() => handleResolve(complaint._id)}
-                              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold text-sm whitespace-nowrap"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleResolve(complaint._id);
+                              }}
+                              className="btn-secondary text-sm"
                             >
                               Resolve
                             </button>
                             <button
-                              onClick={() => handleRevertToPending(complaint._id)}
-                              className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition font-semibold text-sm whitespace-nowrap"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRevertToPending(complaint._id);
+                              }}
+                              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition font-semibold text-sm whitespace-nowrap"
                             >
                               Revert to Pending
                             </button>
@@ -423,11 +436,17 @@ const Dashboard = () => {
 
             {/* "For You" Section for Workers */}
             {user?.role === "worker" && user?.subrole && getForYouComplaints().length > 0 && (
-              <div className="bg-blue-50 border-l-4 border-blue-500 rounded-lg shadow-lg p-6 mb-6">
-                <h2 className="text-2xl font-bold text-blue-900 mb-4">For You ({getForYouComplaints().length})</h2>
-                <div className="space-y-4">
+              <div className="card-alt mb-8 border-l-teal-500">
+                <h2 className="text-3xl font-bold text-teal-600 mb-6 tracking-wide">
+                  For You ({getForYouComplaints().length})
+                </h2>
+                <div className="grid-construct">
                   {getForYouComplaints().map((complaint) => (
-                    <div key={complaint._id} className="bg-white border border-blue-200 rounded-lg p-4 hover:shadow-md transition">
+                    <div 
+                      key={complaint._id} 
+                      className="card complaint-card"
+                      onClick={() => navigate(`/buildings/${complaint.buildingNumber}/floors/${complaint.floorNumber}/rooms/${complaint.roomNumber}/objects/${complaint.objectNumber}/complaints`)}
+                    >
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-2">
@@ -471,25 +490,32 @@ const Dashboard = () => {
                             )}
                           </div>
                         </div>
-                        <div className="flex flex-col gap-2 ml-4 min-w-max">
+                        <div className="flex flex-col gap-3 ml-6 min-w-max">
                           <Link
                             to={`/buildings/${complaint.buildingNumber}/floors/${complaint.floorNumber}/rooms/${complaint.roomNumber}/objects/${complaint.objectNumber}/complaints`}
-                            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold text-sm text-center whitespace-nowrap"
+                            className="btn-outline text-sm view-details-btn"
+                            onClick={(e) => e.stopPropagation()}
                           >
                             View Details
                           </Link>
                           {complaint.status === "pending" && (
                             <button
-                              onClick={() => handleMarkAsLooking(complaint._id)}
-                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold text-sm whitespace-nowrap"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMarkAsLooking(complaint._id);
+                              }}
+                              className="btn-primary text-sm"
                             >
                               Mark Looking
                             </button>
                           )}
                           {canResolveComplaint(complaint, user) && (
                             <button
-                              onClick={() => handleResolve(complaint._id)}
-                              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold text-sm whitespace-nowrap"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleResolve(complaint._id);
+                              }}
+                              className="btn-secondary text-sm"
                             >
                               Resolve
                             </button>
@@ -503,15 +529,15 @@ const Dashboard = () => {
             )}
 
             {/* All Complaints Section */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="card">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">{user?.role === "worker" && user?.subrole ? "All Complaints" : "Complaints"}</h2>
+                <h2 className="text-3xl font-bold text-orange-600 mb-4 tracking-wide">{user?.role === "worker" && user?.subrole ? "All Complaints" : "Complaints"}</h2>
                 
                 {/* Filter Section for Admins and Workers */}
                 {(user?.role === "admin" || user?.role === "worker") && (
-                  <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-lg font-semibold text-gray-800">Filters</h3>
+                  <div className="bg-pattern rounded-lg p-6 mb-6 border-l-4 border-orange-500">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-bold text-gray-800 tracking-wide">Filters</h3>
                       {(blockFilter || floorFilter || roomFilter) && (
                         <button
                           onClick={() => {
@@ -519,35 +545,35 @@ const Dashboard = () => {
                             setFloorFilter("");
                             setRoomFilter("");
                           }}
-                          className="text-sm bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                          className="btn-primary text-sm"
                         >
                           Clear All
                         </button>
                       )}
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Block Number</label>
+                        <label className="block text-sm font-bold text-gray-700 mb-2 tracking-wide">Block Number</label>
                         <input
                           type="text"
                           placeholder="e.g., A101"
                           value={blockFilter}
                           onChange={(e) => setBlockFilter(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          className="w-full"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Floor Number</label>
+                        <label className="block text-sm font-bold text-gray-700 mb-2 tracking-wide">Floor Number</label>
                         <input
                           type="text"
                           placeholder="e.g., 1"
                           value={floorFilter}
                           onChange={(e) => setFloorFilter(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          className="w-full"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Room Number</label>
+                        <label className="block text-sm font-bold text-gray-700 mb-2 tracking-wide">Room Number</label>
                         <input
                           type="text"
                           placeholder="e.g., 101"
@@ -605,9 +631,13 @@ const Dashboard = () => {
                 return displayComplaints.length === 0 ? (
                   <p className="text-gray-500 text-center py-8">{noResultsMessage}</p>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="grid-construct">
                     {displayComplaints.map((complaint) => (
-                    <div key={complaint._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                    <div 
+                      key={complaint._id} 
+                      className="card complaint-card"
+                      onClick={() => navigate(`/buildings/${complaint.buildingNumber}/floors/${complaint.floorNumber}/rooms/${complaint.roomNumber}/objects/${complaint.objectNumber}/complaints`)}
+                    >
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-2">
@@ -656,25 +686,32 @@ const Dashboard = () => {
                             )}
                           </div>
                         </div>
-                        <div className="flex flex-col gap-2 ml-4 min-w-max">
+                        <div className="flex flex-col gap-3 ml-6 min-w-max">
                           <Link
                             to={`/buildings/${complaint.buildingNumber}/floors/${complaint.floorNumber}/rooms/${complaint.roomNumber}/objects/${complaint.objectNumber}/complaints`}
-                            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold text-sm text-center whitespace-nowrap"
+                            className="btn-outline text-sm view-details-btn"
+                            onClick={(e) => e.stopPropagation()}
                           >
                             View Details
                           </Link>
                           {(user?.role === "admin" || user?.role === "worker") && complaint.status === "pending" && (
                             <button
-                              onClick={() => handleMarkAsLooking(complaint._id)}
-                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold text-sm whitespace-nowrap"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMarkAsLooking(complaint._id);
+                              }}
+                              className="btn-primary text-sm"
                             >
                               Mark Looking
                             </button>
                           )}
                           {canResolveComplaint(complaint, user) && (
                             <button
-                              onClick={() => handleResolve(complaint._id)}
-                              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold text-sm whitespace-nowrap"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleResolve(complaint._id);
+                              }}
+                              className="btn-secondary text-sm"
                             >
                               Resolve
                             </button>
@@ -692,8 +729,8 @@ const Dashboard = () => {
 
         {/* History Tab Content */}
         {activeTab === "history" && (user?.role === "admin" || user?.role === "worker") && (
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+          <div className="card">
+            <h2 className="text-3xl font-bold text-orange-600 mb-6 tracking-wide">
               Task History ({getFilteredHistoryComplaints().length} tasks)
             </h2>
             
@@ -762,9 +799,13 @@ const Dashboard = () => {
                 <p className="text-gray-500">No resolved tasks found for the selected period.</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="grid-construct">
                 {getFilteredHistoryComplaints().map((complaint) => (
-                  <div key={complaint._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                  <div 
+                    key={complaint._id} 
+                    className="card complaint-card"
+                    onClick={() => navigate(`/buildings/${complaint.buildingNumber}/floors/${complaint.floorNumber}/rooms/${complaint.roomNumber}/objects/${complaint.objectNumber}/complaints`)}
+                  >
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-2">
@@ -786,10 +827,11 @@ const Dashboard = () => {
                           )}
                         </div>
                       </div>
-                      <div className="flex flex-col gap-2 ml-4 min-w-max">
+                      <div className="flex flex-col gap-3 ml-6 min-w-max">
                         <Link
                           to={`/buildings/${complaint.buildingNumber}/floors/${complaint.floorNumber}/rooms/${complaint.roomNumber}/objects/${complaint.objectNumber}/complaints`}
-                          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold text-sm text-center whitespace-nowrap"
+                          className="btn-outline text-sm view-details-btn"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           View Details
                         </Link>

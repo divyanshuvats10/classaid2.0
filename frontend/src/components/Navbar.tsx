@@ -31,13 +31,13 @@ const Navbar = () => {
   const getRoleColor = (role: string) => {
     switch (role) {
       case "admin":
-        return "bg-red-600 text-white";
+        return "bg-orange-600 text-white";
       case "worker":
-        return "bg-yellow-500 text-black";
+        return "bg-teal-500 text-white";
       case "teacher":
-        return "bg-orange-500 text-white";
+        return "bg-blue-500 text-white";
       default:
-        return "bg-green-500 text-white";
+        return "bg-purple-500 text-white";
     }
   };
 
@@ -45,31 +45,31 @@ const Navbar = () => {
     <nav className="bg-black text-white shadow-2xl relative overflow-hidden">
       {/* Geometric Background Elements */}
       <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-0 left-0 w-32 h-32 bg-red-600 transform rotate-45 -translate-x-16 -translate-y-16"></div>
-        <div className="absolute top-0 right-0 w-24 h-24 bg-yellow-500 transform rotate-12 translate-x-8 -translate-y-8"></div>
+        <div className="absolute top-0 left-0 w-32 h-32 bg-orange-500 transform rotate-45 -translate-x-16 -translate-y-16"></div>
+        <div className="absolute top-0 right-0 w-24 h-24 bg-teal-500 transform rotate-12 translate-x-8 -translate-y-8"></div>
       </div>
 
       <div className="container mx-auto px-6 py-4 relative z-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-8">
-            <Link to="/dashboard" className="text-3xl font-black hover:text-yellow-400 transition-all duration-300 transform hover:scale-105">
-              CLASS<span className="text-red-500">AID</span>
+            <Link to="/dashboard" className="text-3xl font-black hover:text-orange-400 transition-all duration-300 transform hover:scale-105">
+              Class<span className="text-orange-500">Aid</span>
             </Link>
             <div className="flex space-x-6">
               <Link to="/dashboard" className="nav-link">
-                DASHBOARD
+                Dashboard
               </Link>
               {user && (
                 <Link to={`/profile/${user.registration_number}`} className="nav-link">
-                  PROFILE
+                  Profile
                 </Link>
               )}
               <Link to="/buildings" className="nav-link">
-                BLOCKS
+                Blocks
               </Link>
               {user?.role === "admin" && (
                 <Link to="/admin/users" className="nav-link">
-                  USERS
+                  Users
                 </Link>
               )}
             </div>
@@ -86,7 +86,7 @@ const Navbar = () => {
                 onClick={handleLogout}
                 className="btn-primary text-sm"
               >
-                LOGOUT
+                Logout
               </button>
             </div>
           )}

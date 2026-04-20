@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import api from "../api/axios";
 import { Floor, User } from "../types";
@@ -10,7 +10,6 @@ const Floors = () => {
   const [user, setUser] = useState<User | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newFloorNumber, setNewFloorNumber] = useState("");
-  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -67,51 +66,27 @@ const Floors = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-[#fef7ed]">
       <Navbar />
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-4">
-          <button onClick={() => navigate("/buildings")} className="text-purple-600 hover:underline mb-4">
-            ← Back to Blocks
-          </button>
-        </div>
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Floors - Block {buildingNumber}</h1>
-          {user?.role === "admin" && (
-            <button
-              onClick={() => setShowAddForm(!showAddForm)}
-              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition"
-            >
-              {showAddForm ? "Cancel" : "Add Floor"}
-            </button>
-          )}
-        </div>
-
-        {showAddForm && user?.role === "admin" && (
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <h2 className="text-2xl font-bold mb-4">Add New Floor</h2>
-            <form onSubmit={handleAddFloor} className="space-y-4">
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">Floor Number</label>
-                <input
-                  type="text"
-                  value={newFloorNumber}
-                  onChange={(e) => setNewFloorNumber(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  required
-                />
-              </div>
-              <button type="submit" className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition">
-                Add Floor
+        <div className="card mb-8 bg-[#fff4e5] border-0 shadow-2xl p-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h1 className="text-4xl font-black text-orange-700">Floors</h1>
+              <p className="mt-3 text-gray-600">Manage floors in Block {buildingNumber} with bold cards, search, and a crisp add-flow.</p>
+            </div>
+            {user?.role === "admin" && (
+              <button onClick={() => setShowAddForm(!showAddForm)} className="btn-primary">
+                {showAddForm ? "Cancel" : "Add Floor"}
               </button>
-            </form>
+            )}
           </div>
-        )}
+        </div>
 
-        <div className="flex">
-          <aside className="w-64 mr-6 hidden md:block">
-            <div className="bg-white rounded-lg shadow-lg p-4">
-              <h3 className="text-lg font-bold mb-3">Search Floors</h3>
+        <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
+          <aside className="space-y-6">
+            <div className="card p-6 border-2 border-orange-200 bg-white/95">
+              <h3 className="text-xl font-bold text-orange-600 mb-4">Search Floors</h3>
               <div className="relative">
                 <input
                   ref={searchInputRef}
@@ -119,7 +94,7 @@ const Floors = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search by floor number"
-                  className="w-full pl-3 pr-9 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200"
                 />
                 {searchQuery && (
                   <button
@@ -129,44 +104,66 @@ const Floors = () => {
                       setSearchQuery("");
                       searchInputRef.current?.focus();
                     }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 w-6 h-6 flex items-center justify-center"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                   >
                     &times;
                   </button>
                 )}
               </div>
             </div>
+
+            {showAddForm && user?.role === "admin" && (
+              <div className="card p-6 border-2 border-orange-200 bg-white/95">
+                <h2 className="text-xl font-bold mb-4">Add New Floor</h2>
+                <form onSubmit={handleAddFloor} className="space-y-4">
+                  <div>
+                    <label className="block text-gray-700 font-semibold mb-2">Floor Number</label>
+                    <input
+                      type="text"
+                      value={newFloorNumber}
+                      onChange={(e) => setNewFloorNumber(e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200"
+                      required
+                    />
+                  </div>
+                  <button type="submit" className="btn-primary w-full">
+                    Add Floor
+                  </button>
+                </form>
+              </div>
+            )}
           </aside>
 
-          <main className="flex-1">
+          <main className="space-y-6">
             {sortedAndFilteredFloors.length === 0 ? (
-              <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-                <p className="text-gray-500">No floors found</p>
+              <div className="card p-10 border-2 border-orange-200 bg-white/95 text-center">
+                <p className="text-gray-600">No floors found</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
                 {sortedAndFilteredFloors.map((floor) => (
-                  <div key={floor.floorNumber} className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h2 className="text-2xl font-bold text-gray-800">Floor {floor.floorNumber}</h2>
-                        <p className="text-gray-600">{floor.rooms.length} room(s)</p>
-                      </div>
+                  <div
+                    key={floor.floorNumber}
+                    className="card flex min-h-[200px] flex-col justify-between border-2 border-orange-200 bg-white/95 p-6 shadow-lg transition hover:-translate-y-1"
+                  >
+                    <div className="space-y-3">
+                      <span className="inline-flex rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-orange-700">
+                        Floor
+                      </span>
+                      <h2 className="text-3xl font-black text-gray-900">{floor.floorNumber}</h2>
+                      <p className="text-sm text-gray-600">{floor.rooms.length} room{floor.rooms.length === 1 ? "" : "s"}</p>
+                    </div>
+
+                    <div className="mt-6 flex flex-col gap-3">
+                      <Link to={`/buildings/${buildingNumber}/floors/${floor.floorNumber}/rooms`} className="btn-outline text-center">
+                        View Rooms
+                      </Link>
                       {user?.role === "admin" && (
-                        <button
-                          onClick={() => handleDelete(floor.floorNumber)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          Delete
+                        <button type="button" onClick={() => handleDelete(floor.floorNumber)} className="btn-secondary">
+                          Delete Floor
                         </button>
                       )}
                     </div>
-                    <Link
-                      to={`/buildings/${buildingNumber}/floors/${floor.floorNumber}/rooms`}
-                      className="block bg-gradient-to-r from-purple-600 to-blue-600 text-white text-center py-2 rounded-lg hover:from-purple-700 hover:to-blue-700 transition"
-                    >
-                      View Rooms
-                    </Link>
                   </div>
                 ))}
               </div>

@@ -2,14 +2,14 @@
 
 /* Constructivism Design System */
 :root {
-  --primary-red: #e53e3e;
-  --primary-yellow: #fbbf24;
+  --primary-orange: #f97316;
+  --primary-teal: #14b8a6;
   --primary-black: #1a202c;
-  --primary-white: #ffffff;
-  --accent-blue: #3182ce;
-  --accent-green: #38a169;
-  --neutral-gray: #718096;
-  --neutral-light: #f7fafc;
+  --primary-white: #fef7ed;
+  --accent-blue: #3b82f6;
+  --accent-purple: #8b5cf6;
+  --neutral-gray: #64748b;
+  --neutral-light: #f8fafc;
 }
 
 /* Custom Fonts - Using system fonts with bold weights */
@@ -32,9 +32,9 @@ body::before {
   width: 100%;
   height: 100%;
   background-image:
-    radial-gradient(circle at 25% 25%, rgba(229, 62, 62, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 75% 75%, rgba(251, 191, 36, 0.1) 0%, transparent 50%),
-    linear-gradient(45deg, transparent 49%, rgba(255, 255, 255, 0.05) 50%, transparent 51%);
+    radial-gradient(circle at 25% 25%, rgba(249, 115, 22, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(20, 184, 166, 0.08) 0%, transparent 50%),
+    linear-gradient(45deg, transparent 49%, rgba(255, 255, 255, 0.03) 50%, transparent 51%);
   background-size: 200px 200px, 150px 150px, 20px 20px;
   pointer-events: none;
   z-index: -1;
@@ -44,7 +44,7 @@ body::before {
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   letter-spacing: -0.025em;
-  text-transform: uppercase;
+  text-transform: none; /* Changed from uppercase */
 }
 
 h1 {
@@ -64,42 +64,62 @@ h3 {
 
 /* Buttons */
 .btn-primary {
-  @apply bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-none transform transition-all duration-200;
-  clip-path: polygon(0 0, 95% 0, 100% 15%, 100% 100%, 5% 100%, 0 85%);
-  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
+  @apply bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg transform transition-all duration-200;
+  clip-path: polygon(0 0, 95% 0, 100% 10%, 100% 100%, 5% 100%, 0 90%);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1);
 }
 
 .btn-primary:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.3);
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.15);
 }
 
 .btn-secondary {
-  @apply bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 px-6 rounded-none;
-  clip-path: polygon(15% 0, 100% 0, 85% 100%, 0 100%);
+  @apply bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-6 rounded-lg;
+  clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
 }
 
 .btn-outline {
-  @apply border-2 border-white text-white hover:bg-white hover:text-black font-bold py-3 px-6 rounded-none transition-all duration-200;
+  @apply border-2 border-orange-200 text-orange-200 hover:bg-orange-50 hover:text-orange-800 font-bold py-3 px-6 rounded-none transition-all duration-200;
   clip-path: polygon(10% 0, 90% 0, 100% 20%, 100% 80%, 90% 100%, 10% 100%, 0 80%, 0 20%);
 }
 
 /* Cards */
 .card {
-  @apply bg-white text-black p-6 rounded-none shadow-lg;
-  clip-path: polygon(0 0, 95% 0, 100% 10%, 100% 90%, 95% 100%, 5% 100%, 0 90%, 0 10%);
-  border-left: 8px solid var(--primary-red);
+  background-color: var(--primary-white);
+  @apply text-black p-6 rounded-lg shadow-lg;
+  clip-path: polygon(0 0, 95% 0, 100% 5%, 100% 100%, 5% 100%, 0 95%);
+  border-left: 6px solid var(--primary-orange);
 }
 
 .card-alt {
-  @apply bg-gray-900 text-white p-6 rounded-none shadow-lg;
-  clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
-  border-top: 8px solid var(--primary-yellow);
+  @apply bg-gray-50 text-black p-6 rounded-lg shadow-lg;
+  clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
+  border-top: 6px solid var(--primary-teal);
+}
+
+/* Hover effects for complaint cards */
+.complaint-card {
+  @apply cursor-pointer transition-all duration-300;
+}
+
+.complaint-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.complaint-card .view-details-btn {
+  @apply opacity-0 transition-opacity duration-300;
+}
+
+.complaint-card:hover .view-details-btn {
+  @apply opacity-100;
 }
 
 /* Form Elements */
 input, textarea, select {
-  @apply bg-white border-2 border-gray-300 text-black px-4 py-3 rounded-none focus:border-red-500 focus:outline-none transition-colors;
+  background-color: var(--primary-white);
+  @apply border-2 border-gray-300 text-black px-4 py-3 rounded-none focus:border-red-500 focus:outline-none transition-colors;
   clip-path: polygon(0 0, 95% 0, 100% 5%, 100% 95%, 95% 100%, 5% 100%, 0 95%, 0 5%);
 }
 
@@ -130,8 +150,8 @@ input:focus, textarea:focus, select:focus {
 /* Grid Layouts */
 .grid-construct {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 1.5rem;
 }
 
 .grid-asymmetric {

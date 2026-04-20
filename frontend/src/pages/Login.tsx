@@ -27,14 +27,14 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center p-6 relative">
       {/* Background Elements */}
       <div className="absolute inset-0">
-        <div className="absolute top-10 right-10 w-40 h-40 bg-red-600 opacity-10 transform rotate-45"></div>
-        <div className="absolute bottom-10 left-10 w-32 h-32 bg-yellow-500 opacity-10 transform -rotate-30"></div>
+        <div className="absolute top-10 right-10 w-40 h-40 bg-orange-500 opacity-10 transform rotate-45"></div>
+        <div className="absolute bottom-10 left-10 w-32 h-32 bg-teal-500 opacity-10 transform -rotate-30"></div>
       </div>
 
       <div className="w-full max-w-md relative z-10">
         <div className="card mb-6">
-          <h2 className="text-4xl font-black text-center mb-2 text-red-600">LOGIN</h2>
-          <div className="w-16 h-1 bg-yellow-500 mx-auto mb-6"></div>
+          <h2 className="text-4xl font-black text-center mb-2 text-orange-600">Login</h2>
+          <div className="w-16 h-1 bg-teal-500 mx-auto mb-6"></div>
         </div>
 
         <div className="card">

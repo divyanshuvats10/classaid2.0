@@ -87,7 +87,7 @@ const RoomObjects = () => {
     <div
       key={obj.objectNumber}
       onClick={() => navigate(`/buildings/${buildingNumber}/floors/${floorNumber}/rooms/${roomNumber}/objects/${obj.objectNumber}/complaints`)}
-      className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition border-2 border-gray-200 cursor-pointer"
+      className="card complaint-card cursor-pointer hover:shadow-2xl transition"
     >
       <div className="flex justify-between items-start mb-2">
         <div>
@@ -111,42 +111,39 @@ const RoomObjects = () => {
           {(obj.status || "working").toUpperCase()}
         </span>
       </div>
-
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-[#fef7ed]">
       <Navbar />
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-4">
-          <button
-            onClick={() => navigate(`/buildings/${buildingNumber}/floors/${floorNumber}/rooms`)}
-            className="text-purple-600 hover:underline mb-4"
-          >
-            ← Back to Rooms
-          </button>
-        </div>
-
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Room {roomNumber} - Assets</h1>
-          {user?.role === "admin" && (
-            <button
-              onClick={() =>
-                navigate(
-                  `/buildings/${buildingNumber}/floors/${floorNumber}/rooms/${roomNumber}/layout-editor`
-                )
-              }
-              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition"
-            >
-              Edit Layout & Assets
-            </button>
-          )}
+        <div className="card mb-8 bg-[#fff4e5] border-0 shadow-2xl p-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h1 className="text-4xl font-black text-orange-700">Room {roomNumber} - Assets</h1>
+              <p className="mt-3 text-gray-600">
+                Browse and manage assets in this room with interactive cards, layout overview, and admin controls.
+              </p>
+            </div>
+            {user?.role === "admin" && (
+              <button
+                onClick={() =>
+                  navigate(
+                    `/buildings/${buildingNumber}/floors/${floorNumber}/rooms/${roomNumber}/layout-editor`
+                  )
+                }
+                className="btn-primary"
+              >
+                Edit Layout & Assets
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Layout View */}
         {layout && layout.layoutType !== "none" && (
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+          <div className="card mb-8 p-6 border-2 border-orange-200 bg-white/95">
             <h2 className="text-xl font-bold mb-4">Room Layout Overview</h2>
 
             <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
@@ -184,7 +181,7 @@ const RoomObjects = () => {
           {Object.entries(grouped)
             .filter(([_, items]) => items.length > 0)
             .map(([type, items]) => (
-              <div key={type} className="bg-white rounded-lg shadow-lg p-6">
+              <div key={type} className="card p-6 border-2 border-orange-200 bg-white/95">
                 <h2 className="text-xl font-bold mb-4 capitalize">{type}s ({items.length})</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {items.map(renderObjectCard)}
@@ -193,8 +190,8 @@ const RoomObjects = () => {
             ))}
 
           {objects.length === 0 && (
-            <div className="bg-white rounded-lg shadow-lg p-12 text-center">
-              <p className="text-gray-500 text-lg mb-4">No assets added yet.</p>
+            <div className="card p-12 border-2 border-orange-200 bg-white/95 text-center">
+              <p className="text-gray-600 text-lg mb-4">No assets added yet.</p>
               {user?.role === "admin" && (
                 <button
                   onClick={() =>
@@ -202,7 +199,7 @@ const RoomObjects = () => {
                       `/buildings/${buildingNumber}/floors/${floorNumber}/rooms/${roomNumber}/layout-editor`
                     )
                   }
-                  className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition"
+                  className="btn-primary"
                 >
                   Add Assets
                 </button>

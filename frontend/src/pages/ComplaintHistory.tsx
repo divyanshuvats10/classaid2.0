@@ -115,49 +115,48 @@ const ComplaintHistory = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-[#fef7ed]">
       <Navbar />
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-4">
-          <button
-            onClick={() =>
-              navigate(`/buildings/${buildingNumber}/floors/${floorNumber}/rooms/${roomNumber}/objects`)
-            }
-            className="text-purple-600 hover:underline mb-4"
-          >
-            ← Back to Assets
-          </button>
-        </div>
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">
-            Complaints - {objectNumber} (Block {buildingNumber}, Floor {floorNumber}, Room {roomNumber})
-          </h1>
-          {user && (
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition"
-            >
-              {showForm ? "Cancel" : "Submit Complaint"}
-            </button>
-          )}
-
+        <div className="card mb-8 bg-[#fff4e5] border-0 shadow-2xl p-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <button
+                onClick={() =>
+                  navigate(`/buildings/${buildingNumber}/floors/${floorNumber}/rooms/${roomNumber}/objects`)
+                }
+                className="btn-outline mb-4"
+              >
+                ← Back to Assets
+              </button>
+              <h1 className="text-4xl font-black text-orange-700">Complaints</h1>
+              <p className="mt-3 text-gray-600">
+                Track and manage complaints for {objectNumber} in Block {buildingNumber}, Floor {floorNumber}, Room {roomNumber}.
+              </p>
+            </div>
+            {user && (
+              <button onClick={() => setShowForm(!showForm)} className="btn-primary">
+                {showForm ? "Cancel" : "Submit Complaint"}
+              </button>
+            )}
+          </div>
         </div>
 
         {showForm && (user?.role === "student" || user?.role === "teacher" || user?.role === "admin" || user?.role === "worker") && (
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <h2 className="text-2xl font-bold mb-4">Submit New Complaint</h2>
+          <div className="card mb-6 border-2 border-orange-200 bg-white/95 p-6">
+            <h2 className="text-xl font-bold mb-4">Submit New Complaint</h2>
             <form onSubmit={handleSubmitComplaint} className="space-y-4">
               <div>
                 <label className="block text-gray-700 font-semibold mb-2">Complaint Description</label>
                 <textarea
                   value={complaintText}
                   onChange={(e) => setComplaintText(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200"
                   rows={4}
                   required
                 />
               </div>
-              <button type="submit" className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition">
+              <button type="submit" className="btn-primary w-full">
                 Submit Complaint
               </button>
             </form>
@@ -165,13 +164,13 @@ const ComplaintHistory = () => {
         )}
 
         {complaints.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-            <p className="text-gray-500">No complaints found for this asset</p>
+          <div className="card p-10 border-2 border-orange-200 bg-white/95 text-center">
+            <p className="text-gray-600">No complaints found for this asset</p>
           </div>
         ) : (
           <div className="space-y-4">
             {complaints.map((complaint) => (
-              <div key={complaint._id} className="bg-white rounded-lg shadow-lg p-6">
+              <div key={complaint._id} className="complaint-card border-2 border-orange-200 bg-white/95 p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-2">
@@ -232,7 +231,7 @@ const ComplaintHistory = () => {
                   {canResolveComplaint(complaint, user) && (
                     <button
                       onClick={() => handleResolve(complaint._id)}
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition ml-4"
+                      className="btn-primary ml-4"
                     >
                       Resolve
                     </button>
